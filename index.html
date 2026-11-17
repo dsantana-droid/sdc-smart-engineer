@@ -1,68 +1,86 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#101827">
-  <meta name="description" content="SDC SMART ENGINEER - análise técnica de hardware e projetos">
-  <title>SDC SMART ENGINEER</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDC SMART ENGINEER — Engenharia de Hardware com IA</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header class="topbar">
-  <div class="brand"><div class="brand-mark">SDC</div><div><strong>SMART ENGINEER</strong><small>INTELLIGÊNCIA EM ENGENHARIA DE HARDWARE</small></div></div>
-  <div class="top-actions"><span class="offline"><i></i> Modo local</span><button id="installBtn" class="btn ghost" hidden>Instalar aplicativo</button></div>
-</header>
-<main class="shell">
-  <aside class="sidebar">
-    <div class="side-label">WORKSPACE</div>
-    <button class="nav active" data-view="analysis">▦ <span>Nova análise</span></button>
-    <button class="nav" data-view="history">◷ <span>Histórico local</span></button>
-    <div class="side-label second">FERRAMENTAS</div>
-    <div class="side-note"><b>Motor técnico</b><p>Regras determinísticas para verificações preliminares.</p></div>
-    <div class="side-note"><b>Camada de IA</b><p>Preparada para integração segura com serviço de IA no backend.</p></div>
-    <div class="side-foot">SDC Technology<br>Versão inicial 0.1.0</div>
-  </aside>
-
-  <section class="content" id="analysisView">
-    <div class="page-head"><div><div class="eyebrow">ENGENHARIA • VALIDAÇÃO DE PROJETOS</div><h1>Análise de especificação</h1><p>Insira os requisitos e a configuração proposta. O sistema identifica pontos de atenção e organiza a revisão técnica.</p></div><span class="version">ALPHA 0.1</span></div>
-    <div class="grid">
-      <section class="panel input-panel">
-        <div class="panel-title"><div><span class="step">01</span><h2>Dados do projeto</h2></div><span class="muted">ENTRADA</span></div>
-        <label>Nome do projeto<input id="projectName" placeholder="Ex.: Servidor CFTV - Cliente ABC"></label>
-        <div class="two">
-          <label>Categoria<select id="category"><option>Servidor</option><option>Storage / NAS</option><option>Workstation</option><option>Desktop</option><option>Mini PC</option><option>Computador industrial</option><option>Infraestrutura CFTV / VMS</option><option>Outro</option></select></label>
-          <label>Finalidade<input id="purpose" placeholder="Ex.: gravação 24x7, VMS, virtualização"></label>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <img src="icon.svg" alt="Logo SDC" class="logo" />
+        <div>
+          <h1>SDC SMART ENGINEER</h1>
+          <span class="badge">v1.0.0 • IA Google Gemini Ativa</span>
         </div>
-        <label>Requisitos do projeto<textarea id="requirements" rows="5" placeholder="Descreva o que o projeto precisa atender. Ex.: 200 câmeras, retenção de 30 dias, RAID 6, 10GbE, expansão futura..."></textarea></label>
-        <label>Especificação proposta<textarea id="specification" rows="12" placeholder="Cole a configuração completa, uma linha por componente. Ex.:&#10;1x Gabinete rack 2U com 12 baias LFF&#10;1x Placa-mãe Intel C262, socket LGA1700&#10;1x Intel Xeon E-2478&#10;4x memória DDR5 ECC UDIMM 32GB&#10;1x controladora RAID PCIe x8&#10;8x SSD SATA 3.84TB&#10;2x interfaces 10GbE PCIe"></textarea></label>
-        <div class="file-row"><label class="file-label">＋ Anexar arquivo de referência<input id="fileInput" type="file" accept=".txt,.csv,.md,.json,.pdf,.docx,.xlsx"></label><span id="fileName" class="muted">TXT/CSV/MD/JSON são lidos nesta versão; outros formatos ficam anexados para etapa futura.</span></div>
-        <div class="actions"><button class="btn secondary" id="sampleBtn">Carregar exemplo</button><button class="btn primary" id="analyzeBtn">Executar análise <span>→</span></button></div>
+      </div>
+
+      <div class="api-box">
+        <input
+          type="password"
+          id="apiKeyInput"
+          placeholder="Cole sua Google Gemini API Key (AIza...)"
+          autocomplete="off"
+        />
+        <button type="button" id="saveKeyBtn" class="btn-secondary">Salvar Chave</button>
+        <span id="keyStatus" class="status-dot" title="Status da API Key"></span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel input-panel">
+        <div class="panel-header">
+          <h2>1. Especificação de Hardware / Sistema</h2>
+          <button type="button" id="loadExampleBtn" class="btn-link">Carregar exemplo</button>
+        </div>
+
+        <label for="projectType" class="field-label">Domínio do Projeto</label>
+        <select id="projectType">
+          <option value="embarcados">Sistemas Embarcados / IoT / Microcontroladores</option>
+          <option value="potencia">Eletrônica de Potência / Fontes / Automação Industrial</option>
+          <option value="pcb">Layout de PCB / Integridade de Sinal / EMC</option>
+          <option value="geral">Especificação Geral de Produto Eletrônico</option>
+        </select>
+
+        <label for="specInput" class="field-label">Descrição Técnica, Requisitos ou Lista de Componentes</label>
+        <textarea
+          id="specInput"
+          rows="12"
+          placeholder="Descreva aqui a arquitetura, tensões de alimentação, microcontroladores, sensores, protocolos de comunicação, ambiente de operação e requisitos do projeto..."
+        ></textarea>
+
+        <div class="actions">
+          <button type="button" id="clearBtn" class="btn-secondary">Limpar</button>
+          <button type="button" id="analyzeBtn" class="btn-primary">Verificar Especificação com IA</button>
+        </div>
       </section>
-      <section class="panel guide-panel">
-        <div class="panel-title"><div><span class="step">02</span><h2>Escopo da validação</h2></div></div>
-        <div class="check-item"><span class="check-icon">✓</span><div><b>Compatibilidade básica</b><small>Interfaces, sockets, tipos de memória e conectividade quando identificáveis.</small></div></div>
-        <div class="check-item"><span class="check-icon">✓</span><div><b>Arquitetura e expansão</b><small>Slots, controladoras, rede, baias e possíveis conflitos declarados.</small></div></div>
-        <div class="check-item"><span class="check-icon">✓</span><div><b>Capacidade e dimensionamento</b><small>Capacidade bruta/líquida e requisitos informados no texto.</small></div></div>
-        <div class="check-item"><span class="check-icon">✓</span><div><b>Riscos e dados ausentes</b><small>Itens que exigem confirmação em documentação oficial.</small></div></div>
-        <div class="notice"><b>Importante</b><p>Esta versão inicial não certifica compatibilidade de fabricante. Não substitui datasheets, QVL, manuais de placa-mãe, matriz de compatibilidade ou validação física.</p></div>
+
+      <section class="panel output-panel">
+        <div class="panel-header">
+          <h2>2. Diagnóstico Técnico de Engenharia</h2>
+          <button type="button" id="copyResultBtn" class="btn-link" disabled>Copiar relatório</button>
+        </div>
+
+        <div id="resultContainer" class="result-area empty">
+          Preencha a especificação ao lado, configure sua chave do Google AI Studio no topo e clique em <strong>Verificar Especificação com IA</strong>.
+        </div>
+
+        <div class="followup-box" id="followupBox" hidden>
+          <input
+            type="text"
+            id="followupInput"
+            placeholder="Faça uma pergunta técnica sobre este diagnóstico (ex: Qual regulador LDO usar?)..."
+          />
+          <button type="button" id="followupBtn" class="btn-primary">Perguntar</button>
+        </div>
       </section>
-    </div>
-    <section id="results" class="panel results" hidden>
-      <div class="results-head"><div><div class="eyebrow">03 • RESULTADO</div><h2 id="resultTitle">Relatório preliminar</h2><p id="resultSub" class="muted"></p></div><div class="score" id="scoreBox"><strong id="score">—</strong><small>ÍNDICE DE COBERTURA</small></div></div>
-      <div class="stats"><div><strong id="countOk">0</strong><small>ATENDE / INDÍCIO</small></div><div><strong id="countWarn">0</strong><small>VERIFICAR</small></div><div><strong id="countFail">0</strong><small>ALERTA</small></div><div><strong id="countPending">0</strong><small>PENDENTE</small></div></div>
-      <div id="findings" class="findings"></div>
-      <div class="report-actions"><button class="btn secondary" id="copyBtn">Copiar relatório</button><button class="btn primary" id="downloadBtn">Exportar TXT ↓</button></div>
-      <p class="disclaimer">Resultado gerado por regras locais e análise textual. “Sem alerta identificado” não significa compatibilidade comprovada. Itens sem evidência permanecem pendentes.</p>
-    </section>
-  </section>
-  <section class="content" id="historyView" hidden>
-    <div class="page-head"><div><div class="eyebrow">REGISTROS LOCAIS</div><h1>Histórico de análises</h1><p>Os relatórios ficam armazenados apenas neste navegador.</p></div></div>
-    <section class="panel"><div id="historyList" class="history-list"><p class="muted">Nenhuma análise salva ainda.</p></div></section>
-  </section>
-</main>
-<footer>SDC SMART ENGINEER • Ferramenta de apoio à engenharia • Não substitui validação técnica oficial.</footer>
-<script src="app.js"></script>
-</body></html>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
