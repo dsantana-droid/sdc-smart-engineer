@@ -1,5 +1,5 @@
 const STORAGE_KEY = "sdc_smart_engineer_gemini_key";
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-3.8-flash";
 
 const state = {
   apiKey: localStorage.getItem(STORAGE_KEY) || "",
