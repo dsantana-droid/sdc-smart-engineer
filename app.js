@@ -1,4 +1,113 @@
-const $ = id => document.getElementById(id);
+// ============================================================================
+// SDC SMART ENGINEER - Módulo de Análise de Engenharia de Hardware com IA
+// ============================================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+  configurarPainelChaveAPI();
+  vincularFormularioAnalise();
+});
+
+// 1. Cria um campo discreto na tela para salvar sua chave da IA apenas no seu navegador
+function configurarPainelChaveAPI() {
+  const container = document.querySelector("main") || document.body;
+  const painel = document.createElement("div");
+  painel.style.cssText = "background:#1e293b; color:#f8fafc; padding:12px; border-radius:8px; margin-bottom:16px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-family:sans-serif; font-size:14px;";
+
+  const chaveSalva = localStorage.getItem("sdc_gemini_api_key") || "";
+
+  painel.innerHTML = `
+    <label for="sdc-api-key" style="font-weight:bold;">Chave IA (Gemini):</label>
+    <input type="password" id="sdc-api-key" value="${chaveSalva}" placeholder="Cole sua chave AIza..." style="flex:1; min-width:200px; padding:6px 10px; border-radius:4px; border:1px solid #475569; background:#0f172a; color:#fff;">
+    <button type="button" id="sdc-save-key" style="padding:6px 14px; background:#2563eb; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Salvar Chave</button>
+    <span id="sdc-key-status" style="color:#4ade80; font-size:12px;">${chaveSalva ? "✓ Chave ativa" : ""}</span>
+  `;
+
+  container.prepend(painel);
+
+  document.getElementById("sdc-save-key").addEventListener("click", () => {
+    const valor = document.getElementById("sdc-api-key").value.trim();
+    localStorage.setItem("sdc_gemini_api_key", valor);
+    document.getElementById("sdc-key-status").textContent = valor ? "✓ Chave salva!" : "Chave removida";
+  });
+}
+
+// 2. Intercepta o campo de texto e o botão do seu index.html existente
+function vincularFormularioAnalise() {
+  const campoTexto = document.querySelector("textarea") || document.querySelector("input[type='text']:not(#sdc-api-key)");
+  const botao = document.querySelector("button:not(#sdc-save-key)");
+  let areaResultado = document.getElementById("resultado") || document.getElementById("output") || document.querySelector(".resultado, .output, pre");
+
+  if (!areaResultado && campoTexto) {
+    areaResultado = document.createElement("div");
+    areaResultado.id = "sdc-ia-resultado";
+    areaResultado.style.cssText = "margin-top:20px; padding:16px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:8px; white-space:pre-wrap; font-family:sans-serif; line-height:1.5;";
+    campoTexto.parentElement.appendChild(areaResultado);
+  }
+
+  if (!campoTexto || !botao) return;
+
+  botao.addEventListener("click", async (evento) => {
+    evento.preventDefault();
+    const especificacao = campoTexto.value.trim();
+    const apiKey = localStorage.getItem("sdc_gemini_api_key");
+
+    if (!apiKey) {
+      alert("Cole e salve sua chave de API do Google Gemini no topo da página antes de verificar.");
+      return;
+    }
+
+    if (!especificacao) {
+      alert("Digite ou cole uma especificação de hardware para analisar.");
+      return;
+    }
+
+    botao.disabled = true;
+    const textoOriginal = botao.textContent;
+    botao.textContent = "Analisando com IA...";
+    areaResultado.textContent = "Processando especificação técnica de engenharia de hardware...";
+
+    try {
+      const respostaIA = await analisarEspecificacaoComIA(especificacao, apiKey);
+      areaResultado.textContent = respostaIA;
+    } catch (erro) {
+      areaResultado.textContent = "Erro na análise: " + erro.message;
+    } finally {
+      botao.disabled = false;
+      botao.textContent = textoOriginal;
+    }
+  });
+}
+
+// 3. Envia a especificação para o modelo Gemini com prompt de Engenharia de Hardware
+async function analisarEspecificacaoComIA(textoEspecificacao, apiKey) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+  const promptSistema = `Você é o SDC SMART ENGINEER, um engenheiro sênior especialista em arquitetura e especificação de hardware eletrônico e sistemas embarcados.
+Analise a especificação fornecida abaixo e entregue um relatório técnico objetivo dividido em:
+1. RESUMO DA ARQUITETURA IDENTIFICADA
+2. DADOS AUSENTES OU AMBÍGUOS (o que falta definir para fabricar/prototipar)
+3. RISCOS TÉCNICOS E ELÉTRICOS (alimentação, consumo, interfaces, compatibilidade lógica, térmica)
+4. RECOMENDAÇÕES DE MELHORIA E PRÓXIMOS PASSOS
+
+Especificação do usuário:
+${textoEspecificacao}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: promptSistema }] }]
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || "Falha na comunicação com a API Gemini.");
+  }
+
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "Nenhuma resposta retornada pela IA.";
+}const $ = id => document.getElementById(id);
 let lastReport = "";
 let deferredInstall = null;
 
